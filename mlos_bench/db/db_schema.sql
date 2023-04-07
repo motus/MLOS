@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS tunable_groups;
 -- A table to store the schema of tunable parameters for a given experiment.
 -- Tunable parameters and their types, used for merging the data from several experiments.
 CREATE TABLE tunable_groups (
-    tunable_groups_id INTEGER NOT NULL,
+    tunable_groups_id INTEGER NOT NULL, -- auto-increment
     tunable_groups_uid VARCHAR(255) NOT NULL,   -- A unique ID for this set of tunable params (e.g. a hash of the json encoded configs)
 
     PRIMARY KEY (tunable_groups_id),
@@ -34,7 +34,7 @@ CREATE TABLE tunable_groups (
 -- Tunable parameters and their types, used for merging the data from several experiments.
 -- Records in this table must match the `mlos_bench.tunables.Tunable` class.
 CREATE TABLE tunable_param (
-    param_id INTEGER NOT NULL,
+    param_id INTEGER NOT NULL, -- auto-increment
     param_name VARCHAR(255) NOT NULL,
     param_type VARCHAR(32) NOT NULL,  -- One of {int, float, categorical}
     param_default VARCHAR(255),
@@ -59,7 +59,7 @@ CREATE TABLE tunable_groups_params (
 -- Note: One or more trials may be associated with a config
 -- (e.g. for repeated trial results for the same config).
 CREATE TABLE trial_config (
-    config_id INTEGER NOT NULL,
+    config_id INTEGER NOT NULL, -- auto-increment
     tunable_groups_id INTEGER NOT NULL, -- The set of tunable params this config is an instance of.
     config_uid VARCHAR(255) NOT NULL,   -- A unique ID for this config (e.g. a hash of the json encoded config)
 
@@ -84,7 +84,7 @@ CREATE TABLE trial_config_value (
 -- These are one or more scores that the experiment scripts are expected to
 -- output upon trial completion.
 CREATE TABLE output_metrics (
-    output_metrics_id INTEGER NOT NULL,
+    output_metrics_id INTEGER NOT NULL, -- auto-increment
     output_metrics_uid VARCHAR(255) NOT NULL,   -- A unique ID for this set of output metrics (e.g. a hash of the json encoded configs)
 
     PRIMARY KEY (output_metrics_id),
@@ -93,7 +93,7 @@ CREATE TABLE output_metrics (
 
 -- Table to hold the description of individual output metrics for the experiment.
 CREATE TABLE metric_type (
-    metric_id INTEGER NOT NULL,
+    metric_id INTEGER NOT NULL, -- auto-increment
     metric_name VARCHAR(255) NOT NULL,
     metric_meta VARCHAR(1023),          -- JSON-encoded metadata (e.g. range or categories).
 
@@ -145,7 +145,7 @@ CREATE TABLE experiment_objectives (
 -- Each trial has a config, and may also have a result, and telemetry data.
 CREATE TABLE trial (
     exp_id VARCHAR(255) NOT NULL,
-    trial_id INTEGER NOT NULL,
+    trial_id INTEGER NOT NULL, -- auto-increment?
     config_id INTEGER NOT NULL,
     ts_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     ts_end TIMESTAMP,
