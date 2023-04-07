@@ -50,18 +50,31 @@ CREATE TABLE experiment_merge (
         REFERENCES trial(exp_id, trial_id)
 );
 
+CREATE TABLE tunable_params (
+    tunable_params_id INTEGER NOT NULL,
+);
+
 -- Tunable parameters and their types, used for merging the data from several experiments.
 -- Records in this table must match the `mlos_bench.tunables.Tunable` class.
-CREATE TABLE tunable_params (
+CREATE TABLE tunable_param (
     param_id VARCHAR(255) NOT NULL,
     param_type VARCHAR(32) NOT NULL,  -- One of {int, float, categorical}
     param_default VARCHAR(255),
     param_meta VARCHAR(1023),  -- JSON-encoded metadata (range or categories).
 
-    PRIMARY KEY (param_id)
+    -- FIXME: This may not be a sufficient unique key.
+    -- For instance, imagine two experiments with the same tunable parameter, but different ranges.
+    PRIMARY KEY (param_id, param_type)
 );
 
-CREATE TABLE trial_config (
+CREATE TABLE (
+    -- TODO: Enable when we pre-populate the `tunable_params` table:
+    -- FOREIGN KEY (param_id) REFERENCES tunable_params(param_id),
+    FOREIGN KEY (exp_id, trial_id) REFERENCES trial(exp_id, trial_id),
+    FOREIGN KEY (exp_id) REFERENCES experiment(exp_id)
+);
+
+CREATE TABLE trial_config_values (
     exp_id VARCHAR(255) NOT NULL,
     trial_id INTEGER NOT NULL,
     param_id VARCHAR(255) NOT NULL,
