@@ -10,12 +10,14 @@ DROP TABLE IF EXISTS trial_telemetry;
 DROP TABLE IF EXISTS trial_result;
 DROP TABLE IF EXISTS experiment_merge;
 DROP TABLE IF EXISTS trial;
-DROP TABLE IF EXISTS experiment_metrics;
+DROP TABLE IF EXISTS experiment_objectives;
 DROP TABLE IF EXISTS experiment;
-DROP TABLE IF EXISTS output_metric;
+DROP TABLE IF EXISTS output_metrics_types;
+DROP TABLE IF EXISTS metric_type;
 DROP TABLE IF EXISTS output_metrics;
 DROP TABLE IF EXISTS trial_config_value;
 DROP TABLE IF EXISTS trial_config;
+DROP TABLE IF EXISTS tunable_groups_params;
 DROP TABLE IF EXISTS tunable_param;
 DROP TABLE IF EXISTS tunable_groups;
 
@@ -32,15 +34,24 @@ CREATE TABLE tunable_groups (
 -- Tunable parameters and their types, used for merging the data from several experiments.
 -- Records in this table must match the `mlos_bench.tunables.Tunable` class.
 CREATE TABLE tunable_param (
-    tunable_groups_id INTEGER NOT NULL,
-    param_id VARCHAR(255) NOT NULL,
+    param_id INTEGER NOT NULL,
+    param_name VARCHAR(255) NOT NULL,
     param_type VARCHAR(32) NOT NULL,  -- One of {int, float, categorical}
     param_default VARCHAR(255),
     param_meta VARCHAR(1023),  -- JSON-encoded metadata (e.g. range or categories).
 
-    -- FIXME? This may still lead to duplicate tunable_params if the same tunable_param is used in multiple tunable_groups sets but others differ.
-    PRIMARY KEY (tunable_groups_id, param_id),
+    PRIMARY KEY (param_id),
+    UNIQUE (param_name, param_type, param_default, param_meta),
     FOREIGN KEY (tunable_groups_id) REFERENCES tunable_groups(tunable_groups_id)
+);
+
+CREATE TABLE tunable_groups_params (
+    tunable_groups_id INTEGER NOT NULL,
+    param_id INTEGER NOT NULL,
+
+    PRIMARY KEY (tunable_groups_id, param_id),
+    FOREIGN KEY (tunable_groups_id) REFERENCES tunable_groups(tunable_groups_id),
+    FOREIGN KEY (param_id) REFERENCES tunable_param(param_id),
 );
 
 -- A named config, which is a collection of config_values
@@ -60,7 +71,7 @@ CREATE TABLE trial_config (
 -- A table to contain an entry for each assigned parameter value in a config.
 CREATE TABLE trial_config_value (
     config_id INTEGER NOT NULL,
-    param_id VARCHAR(255) NOT NULL,
+    param_id INTEGER NOT NULL,
     param_value VARCHAR(255),
 
     PRIMARY KEY (config_id, param_id),
@@ -81,15 +92,23 @@ CREATE TABLE output_metrics (
 );
 
 -- Table to hold the description of individual output metrics for the experiment.
-CREATE TABLE output_metric (
-    output_metrics_id INTEGER NOT NULL,
-    metric_id VARCHAR(255) NOT NULL,
-    metric_type VARCHAR(32) NOT NULL,   -- One of {int, float}
+CREATE TABLE metric_type (
+    metric_id INTEGER NOT NULL,
+    metric_name VARCHAR(255) NOT NULL,
     metric_meta VARCHAR(1023),          -- JSON-encoded metadata (e.g. range or categories).
 
-    -- FIXME? This may still lead to duplicate outputs if the same metric is used in multiple output_metric sets but others differ.
+    PRIMARY KEY (metric_id),
+    UNIQUE (metric_name, metric_meta)
+);
+
+-- Table links metrics with output_metrics sets.
+CREATE TABLE output_metrics_types (
+    output_metrics_id INTEGER NOT NULL,
+    metric_id INTEGER NOT NULL,
+
     PRIMARY KEY (output_metrics_id, metric_id),
-    FOREIGN KEY (output_metrics_id) REFERENCES output_metrics(output_metrics_id)
+    FOREIGN KEY (output_metrics_id) REFERENCES output_metrics(output_metrics_id),
+    FOREIGN KEY (metric_id) REFERENCES metric_type(metric_id)
 );
 
 -- A table to store experiment info.
@@ -110,12 +129,15 @@ CREATE TABLE experiment (
 -- One or more objectives for the experiment to optimize.
 CREATE TABLE experiment_objectives (
     exp_id VARCHAR(255) NOT NULL,
-    metric_id VARCHAR(255) NOT NULL,
+    output_metrics_id INTEGER NOT NULL,
+    metric_id INTEGER NOT NULL,
     minimize BOOLEAN NOT NULL,
 
     PRIMARY KEY (exp_id, metric_id),
-    FOREIGN KEY (exp_id) REFERENCES experiment(exp_id)
-    FOREIGN KEY (metric_id) REFERENCES output_metrics(metric_id)
+    FOREIGN KEY (exp_id) REFERENCES experiment(exp_id),
+    FOREIGN KEY (output_metrics_id) REFERENCES experiment(output_metrics_id),
+    FOREIGN KEY (metric_id) REFERENCES metric_types(metric_id),
+    FOREIGN KEY (output_metrics_id, metric_id) REFERENCES output_metrics_types(output_metrics_id, metric_id)
 );
 
 -- A table to store trial info.
@@ -135,6 +157,7 @@ CREATE TABLE trial (
     FOREIGN KEY (config_id) REFERENCES trial_config(config_id)
 );
 
+-- A table to help note which trials are reusable for an optimizer across different experiments.
 CREATE TABLE experiment_merge (
     dest_exp_id VARCHAR(255) NOT NULL,
     dest_trial_id INTEGER NOT NULL,
@@ -156,13 +179,13 @@ CREATE TABLE experiment_merge (
 CREATE TABLE trial_result (
     exp_id VARCHAR(255) NOT NULL,
     trial_id INTEGER NOT NULL,
-    metric_id VARCHAR(255) NOT NULL,
-    metric_value VARCHAR(255),   -- generally expected to be a float, but we leave it as a string for flexibility for now
+    metric_id INTEGER NOT NULL,
+    metric_value FLOAT,
 
     PRIMARY KEY (exp_id, trial_id, metric_id),
     FOREIGN KEY (exp_id, trial_id) REFERENCES trial(exp_id, trial_id),
-    FOREIGN KEY (metric_id) REFERENCES output_metric(metric_id),
-    FOREIGN KEY (exp_id) REFERENCES experiment(exp_id)
+    FOREIGN KEY (exp_id) REFERENCES experiment(exp_id),
+    FOREIGN KEY (metric_id) REFERENCES metric_type(metric_id)
 );
 
 -- A table to store additional (e.g. intermediary) telemetry data for a trial.
@@ -172,8 +195,7 @@ CREATE TABLE trial_telemetry (
     trial_id INTEGER NOT NULL,
     ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     metric_id VARCHAR(255) NOT NULL,
-    metric_value VARCHAR(255),
-
+    metric_value VARCHAR(255),  -- generally expected to be a float, but we leave it as a string for flexibility for now
     UNIQUE (exp_id, trial_id, ts, metric_id),
     FOREIGN KEY (exp_id, trial_id) REFERENCES trial(exp_id, trial_id),
     FOREIGN KEY (exp_id) REFERENCES experiment(exp_id)
