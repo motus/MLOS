@@ -1,0 +1,53 @@
+{
+    "name": "Local scripts for LST-Bench + Spark",
+    "class": "mlos_bench.environments.local.LocalEnv",
+
+    "include_tunables": ["environments/apps/local-spark/spark-tunables.jsonc"],
+
+    "config": {
+
+        "tunable_params": ["spark"],
+
+        "required_args": [
+            "experimentId",
+            "trialId"
+        ],
+
+        "shell_env_params": [
+            "experimentId",
+            "trialId"
+            // We can also add tunables like DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE here
+            // and they will become environment variables in setup/run/teardown
+            // automatically, but we'll lose the metadata like scale and value_prefix.
+
+        ],
+
+        "dump_params_file": "spark-params.json",
+        "dump_meta_file": "spark-meta.json",
+
+        "setup": [
+            "mkdir -p /tmp/$experimentId.$trialId/",
+            "environments/apps/local-spark/scripts/generate_spark_config.py spark-params.json spark-meta.json /tmp/$experimentId.$trialId/spark-config.sh",
+            "chmod 755 /tmp/$experimentId.$trialId/spark-config.sh"
+        ],
+
+        "run": [
+            "source /tmp/$experimentId.$trialId/spark-config.sh",
+            "echo run your script here",
+            // Check if env variables are set:
+            "echo DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE = $DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE",
+            // Produce some fake data:
+            "echo \"metric,value\">spark-results.csv",
+            "echo \"latency,123.45\">>spark-results.csv",
+            "echo \"throughput,123456789\">>spark-results.csv",
+            "echo \"score,99.9\">>spark-results.csv"
+        ],
+
+        "teardown": [
+            // "rm -rf /tmp/$experimentId.$trialId/",
+            "echo Teardown"
+        ],
+
+        "read_results_file": "spark-results.csv"
+    }
+}

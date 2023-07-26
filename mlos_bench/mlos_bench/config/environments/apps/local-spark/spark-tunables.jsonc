@@ -1,0 +1,41 @@
+{
+    "spark": {
+        "cost": 1,
+        "params": {
+            "SCALE_FACTOR": {
+                "description": "Scale factor",
+                "type": "int",
+                "default": 100,
+                "range": [1, 100]
+            },
+            "DELTA_AUTO_OPTIMIZE": {
+                "type": "categorical",
+                "default": "true",
+                "values": ["true", "false"]
+            },
+            "DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE": {
+                "type": "int",
+                "default": 1024,  // default 1073741824 B
+                "meta": {"scale": 1048576},  // MB
+                "range": [1, 65536]
+            },
+            "DELTA_AUTO_OPTIMIZE_MAX_FILE_SIZE": {
+                "type": "int",
+                "default": 1024,  // default 1073741824 B
+                "meta": {"scale": 1048576},  // MB
+                "range": [1, 65536]
+            },
+            "DELTA_AUTO_OPTIMIZE_MAX_COMPACT_BYTES": {
+                "type": "int",
+                "default": 20,
+                "meta": {"value_suffix": "GB"},
+                "range": [1, 128]
+            },
+            "DELTA_AUTO_OPTIMIZE_TARGET": {
+                "type": "categorical",
+                "default": "table",
+                "values": ["table"]  // TODO: add other values here
+            }
+        }
+    }
+}
