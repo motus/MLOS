@@ -32,10 +32,12 @@
         ],
 
         "run": [
-            "source /tmp/$experimentId.$trialId/spark-config.sh",
-            "echo run your script here",
+            // At the start of your script, run
+            // ($experimentId and $trialId will be set for you):
+            ". /tmp/$experimentId.$trialId/spark-config.sh",
+            "echo Run your script here",
             // Check if env variables are set:
-            "echo DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE = $DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE",
+            ". /tmp/$experimentId.$trialId/spark-config.sh; echo $DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE",
             // Produce some fake data:
             "echo \"metric,value\">spark-results.csv",
             "echo \"latency,123.45\">>spark-results.csv",
