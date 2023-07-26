@@ -37,7 +37,7 @@
             ". /tmp/$experimentId.$trialId/spark-config.sh",
             "echo Run your script here",
             // Check if env variables are set:
-            ". /tmp/$experimentId.$trialId/spark-config.sh; echo $DELTA_AUTO_OPTIMIZE_MIN_FILE_SIZE",
+            ". /tmp/$experimentId.$trialId/spark-config.sh; env",
             // Produce some fake data:
             "echo \"metric,value\">spark-results.csv",
             "echo \"latency,123.45\">>spark-results.csv",
