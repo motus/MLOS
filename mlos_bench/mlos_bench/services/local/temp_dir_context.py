@@ -12,7 +12,7 @@ import os
 from contextlib import nullcontext
 from string import Template
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from mlos_bench.services.base_service import Service
 
@@ -27,6 +27,11 @@ class TempDirContextService(Service, metaclass=abc.ABCMeta):
     It is inherited by LocalExecService and MockLocalExecService.
     This class is not supposed to be used as a standalone service.
     """
+
+    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+        return super()._local_service_methods([
+            self.temp_dir_context,
+        ] + (local_methods or []))
 
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,
@@ -46,7 +51,6 @@ class TempDirContextService(Service, metaclass=abc.ABCMeta):
         parent : Service
             An optional parent service that can provide mixin functions.
         """
-        self._local_methods.append(self.temp_dir_context)   # FIXME: how to handle adding vs. overridding child/parent service methods?
         super().__init__(config, global_config, parent)
         self._temp_dir = self.config.get("temp_dir")
         if self._temp_dir:

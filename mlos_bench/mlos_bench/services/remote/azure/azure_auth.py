@@ -9,7 +9,7 @@ A collection Service functions for managing VMs on Azure.
 import datetime
 import logging
 from base64 import b64decode
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import azure.identity as azure_id
 from azure.keyvault.secrets import SecretClient
@@ -28,6 +28,11 @@ class AzureAuthService(Service, SupportsAuth):
 
     _REQ_INTERVAL = 300   # = 5 min
 
+    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+        return super()._local_service_methods([
+            self.get_access_token,
+        ] + (local_methods or []))
+
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,
                  global_config: Optional[Dict[str, Any]] = None,
@@ -45,7 +50,6 @@ class AzureAuthService(Service, SupportsAuth):
         parent : Service
             Parent service that can provide mixin functions.
         """
-        self._local_methods = [self.get_access_token]
         super().__init__(config, global_config, parent)
 
         # This parameter can come from command line as strings, so conversion is needed.

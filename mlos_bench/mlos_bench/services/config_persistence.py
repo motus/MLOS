@@ -14,7 +14,7 @@ import sys
 import json    # For logging only
 import logging
 
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type
 
 import json5    # To read configs with comments and other JSON5 syntax features
 from jsonschema import ValidationError, SchemaError
@@ -43,6 +43,18 @@ class ConfigPersistenceService(Service, SupportsConfigLoading):
 
     BUILTIN_CONFIG_PATH = str(files("mlos_bench.config").joinpath("")).replace("\\", "/")
 
+    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+        return super()._local_service_methods([
+            self.resolve_path,
+            self.load_config,
+            self.prepare_class_load,
+            self.build_service,
+            self.build_environment,
+            self.load_services,
+            self.load_environment,
+            self.load_environment_list,
+        ] + (local_methods or []))
+
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,
                  global_config: Optional[Dict[str, Any]] = None,
@@ -60,16 +72,6 @@ class ConfigPersistenceService(Service, SupportsConfigLoading):
         parent : Service
             An optional parent service that can provide mixin functions.
         """
-        self._local_methods = [
-            self.resolve_path,
-            self.load_config,
-            self.prepare_class_load,
-            self.build_service,
-            self.build_environment,
-            self.load_services,
-            self.load_environment,
-            self.load_environment_list,
-        ]
         super().__init__(config, global_config, parent)
         self._config_loader_service = self
 

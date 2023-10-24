@@ -10,7 +10,7 @@ import json
 import time
 import logging
 
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple
+from typing import Any, Callable, Dict, List, Iterable, Optional, Tuple
 
 import requests
 
@@ -122,24 +122,8 @@ class AzureVMService(Service, SupportsHostProvisioning, SupportsHostOps, Support
         "?api-version=2022-03-01"
     )
 
-    def __init__(self,
-                 config: Optional[Dict[str, Any]] = None,
-                 global_config: Optional[Dict[str, Any]] = None,
-                 parent: Optional[Service] = None):
-        """
-        Create a new instance of Azure services proxy.
-
-        Parameters
-        ----------
-        config : dict
-            Free-format dictionary that contains the benchmark environment
-            configuration.
-        global_config : dict
-            Free-format dictionary of global parameters.
-        parent : Service
-            Parent service that can provide mixin functions.
-        """
-        self._local_methods = [
+    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+        return super()._local_service_methods([
             # SupportsHostProvisioning
             self.provision_host,
             self.deprovision_host,
@@ -157,8 +141,25 @@ class AzureVMService(Service, SupportsHostProvisioning, SupportsHostOps, Support
             # SupportsRemoteExec
             self.remote_exec,
             self.get_remote_exec_results,
-        ]
+        ] + (local_methods or []))
 
+    def __init__(self,
+                 config: Optional[Dict[str, Any]] = None,
+                 global_config: Optional[Dict[str, Any]] = None,
+                 parent: Optional[Service] = None):
+        """
+        Create a new instance of Azure services proxy.
+
+        Parameters
+        ----------
+        config : dict
+            Free-format dictionary that contains the benchmark environment
+            configuration.
+        global_config : dict
+            Free-format dictionary of global parameters.
+        parent : Service
+            Parent service that can provide mixin functions.
+        """
         super().__init__(config, global_config, parent)
 
         check_required_params(

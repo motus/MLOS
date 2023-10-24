@@ -14,7 +14,7 @@ import subprocess
 import sys
 
 from string import Template
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TYPE_CHECKING
 
 from mlos_bench.services.base_service import Service
 from mlos_bench.services.local.temp_dir_context import TempDirContextService
@@ -68,6 +68,11 @@ class LocalExecService(TempDirContextService, SupportsLocalExec):
     due to reduced dependency management complications vs the target environment.
     """
 
+    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+        return super()._local_service_methods([
+            self.local_exec,
+        ] + (local_methods or []))
+
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,
                  global_config: Optional[Dict[str, Any]] = None,
@@ -85,7 +90,6 @@ class LocalExecService(TempDirContextService, SupportsLocalExec):
         parent : Service
             An optional parent service that can provide mixin functions.
         """
-        self._local_methods = [self.local_exec]
         super().__init__(config, global_config, parent)
         self.abort_on_error = self.config.get("abort_on_error", True)
 

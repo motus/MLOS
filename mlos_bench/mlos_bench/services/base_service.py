@@ -55,6 +55,18 @@ class Service:
         assert issubclass(cls, Service)
         return instantiate_from_config(cls, class_name, config, global_config, parent)
 
+    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+        """
+        Gets the methods that are locally provided by this service.
+
+        NOTE: Due to mix-in logic, this may return different values after initialization.
+        The intent is to override and combine with calls to super()._local_service_methods([my, local, methods])
+        """
+        # pylint: disable=no-self-use
+        local_methods_dict = {}
+        local_methods_dict.update({method.__name__: method for method in (local_methods or [])})
+        return local_methods_dict
+
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,
                  global_config: Optional[Dict[str, Any]] = None,
@@ -73,21 +85,19 @@ class Service:
         parent : Service
             An optional parent service that can provide mixin functions.
         """
-        if self.__class__ == Service:
-            # Skip over the case where instantiate a bare base Service class in order to build up a mix-in.
-            self._local_methods: List[Callable] = []
-        else:
-            assert hasattr(self, '_local_methods') and isinstance(self._local_methods, list) and self._local_methods, \
-                f"{self.__class__.__name__} must define _local_methods"
-
         self.config = config or {}
         self._validate_json_config(self.config)
         self._parent = parent
         self._services: Dict[str, Callable] = {}
 
+        # NOTE: It's important that we call this *prior* to registering the
+        # parent methods so that they aren't overwritten.
+        self._local_methods = self._local_service_methods()
+        # Build up the base of the service mixins by registering all the parent methods first.
         if parent:
             self.register(parent.export())
-        # Register methods that we want to expose to the Environment objects.
+        # Register local methods that we want to expose to the Environment objects.
+        # (this possibly overrides prior methods from the parent)
         self.register(self._local_methods)
 
         self._config_loader_service: SupportsConfigLoading
