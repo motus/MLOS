@@ -73,6 +73,13 @@ class Service:
         parent : Service
             An optional parent service that can provide mixin functions.
         """
+        if self.__class__ == Service:
+            # Skip over the case where instantiate a bare base Service class in order to build up a mix-in.
+            self._local_methods: List[Callable] = []
+        else:
+            assert hasattr(self, '_local_methods') and isinstance(self._local_methods, list) and self._local_methods, \
+                f"{self.__class__.__name__} must define _local_methods"
+
         self.config = config or {}
         self._validate_json_config(self.config)
         self._parent = parent
@@ -80,6 +87,8 @@ class Service:
 
         if parent:
             self.register(parent.export())
+        # Register methods that we want to expose to the Environment objects.
+        self.register(self._local_methods)
 
         self._config_loader_service: SupportsConfigLoading
         if parent and isinstance(parent, SupportsConfigLoading):

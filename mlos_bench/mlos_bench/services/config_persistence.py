@@ -60,6 +60,16 @@ class ConfigPersistenceService(Service, SupportsConfigLoading):
         parent : Service
             An optional parent service that can provide mixin functions.
         """
+        self._local_methods = [
+            self.resolve_path,
+            self.load_config,
+            self.prepare_class_load,
+            self.build_service,
+            self.build_environment,
+            self.load_services,
+            self.load_environment,
+            self.load_environment_list,
+        ]
         super().__init__(config, global_config, parent)
         self._config_loader_service = self
 
@@ -75,18 +85,6 @@ class ConfigPersistenceService(Service, SupportsConfigLoading):
         # Append the built-in config path if not already on the list.
         if self.BUILTIN_CONFIG_PATH not in self._config_path:
             self._config_path.append(self.BUILTIN_CONFIG_PATH)
-
-        # Register methods that we want to expose to the Environment objects.
-        self.register([
-            self.resolve_path,
-            self.load_config,
-            self.prepare_class_load,
-            self.build_service,
-            self.build_environment,
-            self.load_services,
-            self.load_environment,
-            self.load_environment_list,
-        ])
 
     @property
     def config_paths(self) -> List[str]:

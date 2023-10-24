@@ -46,8 +46,7 @@ class TempDirContextService(Service, metaclass=abc.ABCMeta):
         parent : Service
             An optional parent service that can provide mixin functions.
         """
-        # IMPORTANT: Save the local methods before invoking the base class constructor
-        local_methods = [self.temp_dir_context]
+        self._local_methods.append(self.temp_dir_context)   # FIXME: how to handle adding vs. overridding child/parent service methods?
         super().__init__(config, global_config, parent)
         self._temp_dir = self.config.get("temp_dir")
         if self._temp_dir:
@@ -56,7 +55,6 @@ class TempDirContextService(Service, metaclass=abc.ABCMeta):
             # and resolve the path to absolute path
             self._temp_dir = self._config_loader_service.resolve_path(self._temp_dir)
         _LOG.info("%s: temp dir: %s", self, self._temp_dir)
-        self.register(local_methods)
 
     def temp_dir_context(self, path: Optional[str] = None) -> Union[TemporaryDirectory, nullcontext]:
         """

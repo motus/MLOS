@@ -85,11 +85,9 @@ class LocalExecService(TempDirContextService, SupportsLocalExec):
         parent : Service
             An optional parent service that can provide mixin functions.
         """
-        # IMPORTANT: Save the local methods before invoking the base class constructor
-        local_methods = [self.local_exec]
+        self._local_methods = [self.local_exec]
         super().__init__(config, global_config, parent)
         self.abort_on_error = self.config.get("abort_on_error", True)
-        self.register(local_methods)
 
     def local_exec(self, script_lines: Iterable[str],
                    env: Optional[Mapping[str, "TunableValue"]] = None,
