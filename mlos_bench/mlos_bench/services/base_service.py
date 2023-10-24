@@ -68,8 +68,10 @@ class Service:
 
             return super()._local_service_methods([local, service, methods] + additional_methods)
         """
-        # pylint: disable=no-self-use
+        assert not hasattr(self, '_local_methods'), f"{__name__} should only be called once during __init__"
         local_methods_dict = {}
+        # Let methods listed later override previously defined ones so that
+        # child class methods take precedence over super class methods.
         local_methods_dict.update({method.__name__: method for method in local_methods})
         return local_methods_dict
 
