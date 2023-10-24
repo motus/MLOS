@@ -23,10 +23,10 @@ class MockLocalExecService(TempDirContextService, SupportsLocalExec):
     Mock methods for LocalExecService testing.
     """
 
-    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+    def _local_service_methods(self, local_methods: List[Callable]) -> Dict[str, Callable]:
         return super()._local_service_methods([
             self.local_exec,
-        ])
+        ] + local_methods)
 
     def local_exec(self, script_lines: Iterable[str],
                    env: Optional[Mapping[str, "TunableValue"]] = None,

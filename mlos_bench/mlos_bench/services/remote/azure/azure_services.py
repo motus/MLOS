@@ -122,7 +122,7 @@ class AzureVMService(Service, SupportsHostProvisioning, SupportsHostOps, Support
         "?api-version=2022-03-01"
     )
 
-    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+    def _local_service_methods(self, local_methods: List[Callable]) -> Dict[str, Callable]:
         return super()._local_service_methods([
             # SupportsHostProvisioning
             self.provision_host,
@@ -141,7 +141,7 @@ class AzureVMService(Service, SupportsHostProvisioning, SupportsHostOps, Support
             # SupportsRemoteExec
             self.remote_exec,
             self.get_remote_exec_results,
-        ] + (local_methods or []))
+        ] + local_methods)
 
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,

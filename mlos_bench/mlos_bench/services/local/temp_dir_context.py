@@ -28,10 +28,10 @@ class TempDirContextService(Service, metaclass=abc.ABCMeta):
     This class is not supposed to be used as a standalone service.
     """
 
-    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+    def _local_service_methods(self, local_methods: List[Callable]) -> Dict[str, Callable]:
         return super()._local_service_methods([
             self.temp_dir_context,
-        ] + (local_methods or []))
+        ] + local_methods)
 
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,

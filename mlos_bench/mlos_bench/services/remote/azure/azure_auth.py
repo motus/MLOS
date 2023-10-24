@@ -28,10 +28,10 @@ class AzureAuthService(Service, SupportsAuth):
 
     _REQ_INTERVAL = 300   # = 5 min
 
-    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+    def _local_service_methods(self, local_methods: List[Callable]) -> Dict[str, Callable]:
         return super()._local_service_methods([
             self.get_access_token,
-        ] + (local_methods or []))
+        ] + local_methods)
 
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,

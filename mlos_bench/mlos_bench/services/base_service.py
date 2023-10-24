@@ -55,16 +55,22 @@ class Service:
         assert issubclass(cls, Service)
         return instantiate_from_config(cls, class_name, config, global_config, parent)
 
-    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+    def _local_service_methods(self, local_methods: List[Callable]) -> Dict[str, Callable]:
         """
         Gets the methods that are locally provided by this service.
 
-        NOTE: Due to mix-in logic, this may return different values after initialization.
-        The intent is to override and combine with calls to super()._local_service_methods([my, local, methods])
+        NOTE: Due to mix-in logic, this may return different values after
+        initialization, but the original value should be in
+        self._local_methods.
+
+        The intent is for subclasses to override and combine with calls to
+        super() to support proper chaining, like so:
+
+            return super()._local_service_methods([local, service, methods] + additional_methods)
         """
         # pylint: disable=no-self-use
         local_methods_dict = {}
-        local_methods_dict.update({method.__name__: method for method in (local_methods or [])})
+        local_methods_dict.update({method.__name__: method for method in local_methods})
         return local_methods_dict
 
     def __init__(self,
@@ -92,7 +98,7 @@ class Service:
 
         # NOTE: It's important that we call this *prior* to registering the
         # parent methods so that they aren't overwritten.
-        self._local_methods = self._local_service_methods()
+        self._local_methods = self._local_service_methods([])   # base class adds no additional local_service_methods
         # Build up the base of the service mixins by registering all the parent methods first.
         if parent:
             self.register(parent.export())

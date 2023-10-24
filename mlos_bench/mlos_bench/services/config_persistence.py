@@ -43,7 +43,7 @@ class ConfigPersistenceService(Service, SupportsConfigLoading):
 
     BUILTIN_CONFIG_PATH = str(files("mlos_bench.config").joinpath("")).replace("\\", "/")
 
-    def _local_service_methods(self, local_methods: Optional[List[Callable]] = None) -> Dict[str, Callable]:
+    def _local_service_methods(self, local_methods: List[Callable]) -> Dict[str, Callable]:
         return super()._local_service_methods([
             self.resolve_path,
             self.load_config,
@@ -53,7 +53,7 @@ class ConfigPersistenceService(Service, SupportsConfigLoading):
             self.load_services,
             self.load_environment,
             self.load_environment_list,
-        ] + (local_methods or []))
+        ] + local_methods)
 
     def __init__(self,
                  config: Optional[Dict[str, Any]] = None,
