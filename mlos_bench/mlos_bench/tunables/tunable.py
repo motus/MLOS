@@ -76,7 +76,7 @@ class Tunable:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         config : dict
             Python dict that represents a Tunable (e.g., deserialized from JSON)
         """
-        if '!' in name:  # TODO: Use a regex here and in JSON schema
+        if not isinstance(name, str) or '!' in name:  # TODO: Use a regex here and in JSON schema
             raise ValueError(f"Invalid name of the tunable: {name}")
         self._name = name
         self._type = config["type"]  # required
@@ -91,7 +91,7 @@ class Tunable:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         self._meta: Dict[str, Any] = config.get("meta", {})
         self._range: Optional[Union[Tuple[int, int], Tuple[float, float]]] = None
         self._quantization: Optional[Union[int, float]] = config.get("quantization")
-        self._log: bool = bool(config.get("log"))
+        self._log: Optional[bool] = config.get("log")
         self._distribution: Optional[DistributionName] = None
         self._distribution_params: Dict[str, float] = {}
         distr = config.get("distribution")
@@ -113,7 +113,7 @@ class Tunable:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         self.value = self._default
 
     def _sanity_check(self) -> None:
-        # pylint: disable=too-complex,too-many-branches
+        # pylint: disable=too-complex,too-many-branches,too-many-statements
         """
         Check if the status of the Tunable is valid, and throw ValueError if it is not.
         """
@@ -129,7 +129,7 @@ class Tunable:  # pylint: disable=too-many-instance-attributes,too-many-public-m
                 raise ValueError(f"Categorical tunable cannot have special values: {self}")
             if self._range_weight is not None:
                 raise ValueError(f"Categorical tunable cannot have range_weight: {self}")
-            if self._log:
+            if self._log is not None:
                 raise ValueError(f"Categorical tunable cannot have log parameter: {self}")
             if self._quantization is not None:
                 raise ValueError(f"Categorical tunable cannot have quantization parameter: {self}")
@@ -546,7 +546,7 @@ class Tunable:  # pylint: disable=too-many-instance-attributes,too-many-public-m
         return self._quantization
 
     @property
-    def is_log(self) -> bool:
+    def is_log(self) -> Optional[bool]:
         """
         Check if numeric tunable is log scale.
 
