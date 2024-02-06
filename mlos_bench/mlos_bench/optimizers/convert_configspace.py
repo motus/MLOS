@@ -123,16 +123,7 @@ def _tunable_to_configspace(
         raise TypeError(f"Invalid Parameter Type: {tunable.type}")
 
     if not tunable.special:
-        return ConfigurationSpace({
-            tunable.name: hp_type(
-                name=tunable.name,
-                lower=tunable.range[0],
-                upper=tunable.range[1],
-                log=tunable.is_log,
-                q=tunable.quantization,
-                default_value=tunable.default if tunable.in_range(tunable.default) else None,
-                meta=meta)
-        })
+        return ConfigurationSpace({tunable.name: range_hp})
 
     # Compute the probabilities of switching between regular and special values.
     special_weights: Optional[List[float]] = None

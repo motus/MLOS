@@ -15,6 +15,7 @@
                 }
             }
         },
+
         "tunable_param_distribution": {
             "description": "Distribution config to use when sampling from numerical range.",
             "allOf": [
@@ -110,6 +111,7 @@
                 }
             ]
         },
+
         "numeric_range": {
             "description": "Two element array representing the lower and upper bounds of the range.",
             "type": "array",
