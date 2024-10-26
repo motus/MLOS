@@ -1,0 +1,5 @@
+{
+    "script_password": "SECRET_PASS",
+    "target_server_config": 1024,
+    "source_server_config": 512
+}
