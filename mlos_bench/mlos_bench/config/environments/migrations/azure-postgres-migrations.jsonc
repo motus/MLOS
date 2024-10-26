@@ -1,0 +1,61 @@
+// Root environment for running postgresql migration benchmarks on Azure.
+// Note: this assumes the source server is already provisioned.
+{
+    "name": "Azure postgres migrations",
+    "class": "mlos_bench.environments.composite_env.CompositeEnv",
+    "include_services": ["services/local/local_exec_service.jsonc"],
+    // Include the definitions of the tunable parameters to use
+    // in this environment and its children, if there are any:
+    "include_tunables": ["environments/local/test_local-tunables.jsonc"],
+    "config": {
+        "tunable_params": ["test_local_tunable_group"],
+        "required_args": [
+            "experiment_id", // Specified by the user in `experiment_test_local.jsonc`
+            "trial_id", // Provided by MLOS/storage
+            "source_server_config", // Provided by the user externally (e.g., through --globals)
+            "target_server_config" // Provided by the user externally (e.g., through --globals)
+        ],
+        "children": [
+            {
+                "name": "Deploy PostgreSQL Flexible server on Azure",
+                "class": "mlos_bench.environments.local.LocalEnv",
+                "config": {
+                    "required_args": [
+                        "experiment_id", // Specified by the user in `experiment_test_local.jsonc`
+                        "trial_id", // Provided by MLOS/storage
+                        "source_server_config", // Provided by the user externally (e.g., through --globals)
+                        "target_server_config" // Provided by the user externally (e.g., through --globals)
+                    ],
+                    "shell_env_params": ["experiment_id", "trial_id", "target_server_config"],
+                    "dump_params_file": "input-params.json",
+                    "dump_meta_file": "input-params-meta.json",
+                    "setup": [
+                        "echo Set up $experiment_id:$trial_id :: shared_buffers = $shared_buffers",
+                        "environments/migrations/scripts/azure-postgres-server.py input-params.json input-params-meta.json 99_bench.conf"
+                    ]
+                }
+            },
+            {
+                "name": "Run Migrations on PostgreSQL Flexible server",
+                "class": "mlos_bench.environments.local.LocalEnv",
+                "config": {
+                    "required_args": [
+                        "experiment_id", // Specified by the user in `experiment_test_local.jsonc`
+                        "trial_id", // Provided by MLOS/storage
+                        "source_server_config", // Provided by the user externally (e.g., through --globals)
+                        "target_server_config" // Provided by the user externally (e.g., through --globals)
+                    ],
+                    "shell_env_params": ["experiment_id", "trial_id", "source_server_config", "target_server_config"],
+                    "dump_params_file": "input-params.json",
+                    "dump_meta_file": "input-params-meta.json",
+                    "run": [
+                        "echo Run $experiment_id:$trial_id",
+                        "environments/migrations/scripts/migration-create.py output-metrics.csv output-telemetry.csv"
+                    ],
+                    "read_telemetry_file": "output-telemetry.csv",
+                    "read_results_file": "output-metrics.csv"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "experiment_id": "MIGRATION-TEST-001",
+
+    "optimization_targets": {
+        "total_time": "min"
+    },
+
+    // Another parameter that gets propagated into the optimizer config.
+    // Each such parameter can be overridden by the CLI option, e.g.,
+    // `--max_suggestions 20`
+    // Number of configurations to be suggested by the optimizer,
+    // if optimization is enabled.
+    "max_suggestions": 10
+}

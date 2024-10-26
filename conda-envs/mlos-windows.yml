@@ -28,23 +28,24 @@ dependencies:
   # This also requires a more recent vs2015_runtime from conda-forge.
   - pyrfr>=0.9.0
   - pip:
-    - bump2version
-    - check-jsonschema
-    - isort
-    - docformatter
-    - licenseheaders
-    - mypy
-    - pandas-stubs
-    - types-beautifulsoup4
-    - types-colorama
-    - types-jsonschema
-    - types-pygments
-    - types-requests
-    - types-setuptools
-    - pyarrow
-    # Workaround a pylance issue in vscode that prevents it finding the latest
-    # method of pip installing editable modules.
-    # https://github.com/microsoft/pylance-release/issues/3473
-    - "--config-settings editable_mode=compat --editable ../mlos_core[full-tests]"
-    - "--config-settings editable_mode=compat --editable ../mlos_bench[full-tests]"
-    - "--config-settings editable_mode=compat --editable ../mlos_viz[full-tests]"
+      - azure-cli==2.56.0
+      - bump2version
+      - check-jsonschema
+      - isort
+      - docformatter
+      - licenseheaders
+      - mypy
+      - pandas-stubs
+      - types-beautifulsoup4
+      - types-colorama
+      - types-jsonschema
+      - types-pygments
+      - types-requests
+      - types-setuptools
+      - pyarrow
+      # Workaround a pylance issue in vscode that prevents it finding the latest
+      # method of pip installing editable modules.
+      # https://github.com/microsoft/pylance-release/issues/3473
+      - "--config-settings editable_mode=compat --editable ../mlos_core[full-tests]"
+      - "--config-settings editable_mode=compat --editable ../mlos_bench[full-tests]"
+      - "--config-settings editable_mode=compat --editable ../mlos_viz[full-tests]"
