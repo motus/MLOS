@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, TypeAlias
 
 import ConfigSpace
 import flaml.tune
-import flaml.tune.sample
 import numpy as np
 from flaml.tune.sample import Domain
 
