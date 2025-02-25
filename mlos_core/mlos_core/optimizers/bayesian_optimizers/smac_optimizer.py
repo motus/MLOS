@@ -394,9 +394,6 @@ class SmacOptimizer(BaseBayesianOptimizer):
         config_sr = pd.Series(dict(trial.config), dtype=object)
         return Suggestion(config=config_sr, context=context, metadata=None)
 
-    def register_pending(self, pending: Suggestion) -> None:
-        raise NotImplementedError()
-
     def surrogate_predict(self, suggestion: Suggestion) -> npt.NDArray:
         if suggestion.context is not None:
             warn(

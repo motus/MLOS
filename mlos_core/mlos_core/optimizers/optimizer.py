@@ -7,6 +7,7 @@
 import collections
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
+from warnings import warn
 
 import ConfigSpace
 import numpy as np
@@ -72,7 +73,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._space_adapter: BaseSpaceAdapter | None = space_adapter
         self._observations: Observations = Observations()
         self._has_context: bool | None = None
-        self._pending_observations: list[tuple[pd.DataFrame, pd.DataFrame | None]] = []
+        self.pending_configs: set[ConfigSpace.Configuration] = set()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(space_adapter={self.space_adapter})"
@@ -243,7 +244,10 @@ class BaseOptimizer(metaclass=ABCMeta):
         pending: Suggestion
             The pending suggestion to register.
         """
-        pass  # pylint: disable=unnecessary-pass # pragma: no cover
+        cs_config = pending.to_configspace_config(self.optimizer_parameter_space)
+        if cs_config in self.pending_configs:
+            warn(f"Configuration {cs_config} was already registered as pending", UserWarning)
+        self.pending_configs.add(cs_config)
 
     def get_observations(self) -> Observations:
         """

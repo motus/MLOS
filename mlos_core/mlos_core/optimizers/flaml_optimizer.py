@@ -178,9 +178,6 @@ class FlamlOptimizer(BaseOptimizer):
         config: dict = self._get_next_config()
         return Suggestion(config=pd.Series(config, dtype=object), context=context, metadata=None)
 
-    def register_pending(self, pending: Suggestion) -> None:
-        raise NotImplementedError()
-
     def _target_function(self, config: dict) -> dict | None:
         """
         Configuration evaluation function called by FLAML optimizer.
@@ -243,6 +240,11 @@ class FlamlOptimizer(BaseOptimizer):
                 for conf in self.evaluated_samples
             ]
             evaluated_rewards = [s.score for s in self.evaluated_samples.values()]
+
+        # for conf in self.pending_configs:
+        #     points_to_evaluate.append(dict(normalize_config(self.optimizer_parameter_space, conf)))
+        #     # TODO: Use the surrogate function here:
+        #     evaluated_rewards.append(float("inf"))
 
         # Warm start FLAML optimizer
         self._suggested_config = None

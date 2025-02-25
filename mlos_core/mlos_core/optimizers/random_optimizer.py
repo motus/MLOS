@@ -75,7 +75,3 @@ class RandomOptimizer(BaseOptimizer):
             context=context,
             metadata=None,
         )
-
-    def register_pending(self, pending: Suggestion) -> None:
-        raise NotImplementedError()
-        # self._pending_observations.append((configs, context))
