@@ -247,7 +247,8 @@ file for simplicity.
 ...            "const_arg_from_globals_1"
 ...         ],
 ...         "run": [
-...             "echo const_arg_from_globals_1,$const_arg_from_globals_1"
+...             "echo const_arg_from_globals_1,$const_arg_from_globals_1",
+...             "echo const_arg_from_globals_2,$const_arg_from_globals_2"
 ...         ],
 ...         // Here we capture the standard output key,value pair to be saved in
 ...         // the trial results.
@@ -341,7 +342,9 @@ trial.
 ...         "dummy_param3": 0.999
 ...     }
 ...     (status, ts, results_data) = env.run()
-...     assert results_data == {"const_arg_from_globals_1": env.parameters["const_arg_from_globals_1"]}, f"Unexpected {results_data}"
+...     assert results_data["const_arg_from_globals_1"] == env.parameters["const_arg_from_globals_1"]
+...     # This one wasn't included in the shell_env_params so isn't available for use.
+...     assert results_data.get("const_arg_from_globals_2") != env.parameters["const_arg_from_globals_2"]
 
 These are the values visible to the implementations of the ``setup``, ``run``, and ``teardown``
 methods. We can see both the constant and tunable parameters combined into a single dictionary
