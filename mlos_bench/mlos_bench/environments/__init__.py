@@ -240,9 +240,18 @@ file for simplicity.
 ...             "const_arg_from_globals_1",
 ...             "const_arg_from_cli_1"
 ...         ],
+...         // For a ScriptEnv (like LocalEnv) we can also export some of those
+...         // variables to the shell environment for use in shell commands during the
+...         // setup/run/teardown phases.
+...         "shell_env_params": [
+...            "const_arg_from_globals_1"
+...         ],
 ...         "run": [
-...             "echo Hello world"
-...         ]
+...             "echo const_arg_from_globals_1,$const_arg_from_globals_1"
+...         ],
+...         // Here we capture the standard output key,value pair to be saved in
+...         // the trial results.
+...         "results_stdout_pattern": "([a-zA-Z0-9_-]+),([ a-zA-Z0-9._-]+)"
 ...     }
 ... }
 ... '''
@@ -331,6 +340,8 @@ trial.
 ...         "dummy_param_float": 0.5,
 ...         "dummy_param3": 0.999
 ...     }
+...     (status, ts, results_data) = env.run()
+...     assert results_data == {"const_arg_from_globals_1": env.parameters["const_arg_from_globals_1"]}, f"Unexpected {results_data}"
 
 These are the values visible to the implementations of the ``setup``, ``run``, and ``teardown``
 methods. We can see both the constant and tunable parameters combined into a single dictionary
